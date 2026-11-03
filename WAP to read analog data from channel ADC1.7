@@ -1,0 +1,20 @@
+#include <lpc214x.h>
+unsigned int adc_data() {
+    unsigned int data;
+    PINSEL1 = 0x00001000;
+    AD1CR = 0x00000000;
+    AD1CR |= (1<<7);
+    AD1CR |= (13<<8);
+    AD1CR |= (1<<16);
+    AD1CR |= (1<<21);
+    AD1CR |= (1<<24);
+    while((AD1GDR & (1<<31)) == 0);
+    data = AD1GDR;
+    data = data >> 6;
+    data = data & 0x000003FF;
+    return data;
+}
+
+int main(void) {
+    adc_data();
+}
