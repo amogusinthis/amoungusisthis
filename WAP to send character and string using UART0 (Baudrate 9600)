@@ -1,0 +1,49 @@
+#include <lpc214x.h>
+void delay(unsigned int ms) {
+    unsigned int j;
+    for(j=0; j*6000<ms; j++);
+}
+
+void pll_init() {
+    PLL0CON = 0x01;
+    PLL0CFG = 0x24;
+    PLL0FEED = 0xAA;
+    PLL0FEED = 0x55;
+    while((PLL0STAT & (1<<10)) == 0);
+    PLL0CON = 0x03;
+    PLL0FEED = 0xAA;
+    PLL0FEED = 0x55;
+    VPBDIV = 0x01;
+}
+
+void uart_init() {
+    pll_init();
+    PINSEL0 = 0x00000005;
+    U0LCR = 0x00000083;
+    U0DLL = 0x87;
+    U0DLM = 0x01;
+    U0LCR = 0x00000003;
+}
+
+void senduart(unsigned char ch) {
+    U0THR = ch;
+    while((U0LSR & (1<<5)) == 0);
+}
+
+char receivedata(unsigned char ch) {
+    while((U0LSR & (1<<0)) == 0);
+    ch = U0RBR;
+    return ch;
+}
+
+void uart_string(char *str) {
+    while(*str) {
+        senduart(*str++);
+    }
+}
+
+int main(void) {
+    uart_init();
+    uart_string("A\r\n w r\r\n Walchand Sangli\r\n");
+    while(1);
+}
